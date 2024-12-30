@@ -1,0 +1,103 @@
+	% 代码分析：模块功能、涉及到的类、类关系、数据结构及关键代码等；
+	% 任务要求，设计任务要求；
+	% 设计：详细的设计方案，相关的数据结构、算法描述，可采用伪代码等形式化描述
+	% 实现：修改哪些类、如何修改、为什么修改等；
+	% 测试：测试用例，测试结果及结果分析，测试运行界面等；
+	% 调试：调试方法，遇到的问题及解决方案等；
+	% 结论与展望：完成的主要工作、收获、进一步的工作，建议、体会、心得等；
+
+\section{作业4}
+\subsection{作业4.1}
+\subsubsection{题目描述}
+
+将右线性文法$G[S]: S \rightarrow xA\;|\;yB\;|\;\varepsilon\;,\;A \rightarrow yA\;|\;y\;,\;B \rightarrow xB\;|\;x$, 转换为：
+\begin{enumerate}
+    \item 有限自动机。
+    \item 正则式。
+\end{enumerate}
+
+\subsubsection{解答}
+
+\paragraph{有限自动机。} 令有限自动机 $M=\left(\{S,A,B,f\},\{x,y\},\delta,\{S\},\{f\}\right)$，其中 $f$ 为添加的终态符号。
+
+类似例题 3.15 的步骤，构造 $\delta$：
+
+\begin{enumerate}
+    \item 对于产生式 $S \rightarrow xA$，由 $S$ 向 $A$ 引 $x$ 弧。
+    \item 对于产生式 $S \rightarrow yB$，由 $S$ 向 $B$ 引 $y$ 弧。
+    \item 对于产生式 $S \rightarrow \varepsilon$，由 $S$ 向 $f$ 引 $\varepsilon$ 弧。
+    \item ...
+\end{enumerate}
+
+不难画出：
+
+\begin{center}
+\begin{tikzpicture}[>=stealth',shorten >=1pt,auto,node distance=2cm]
+  \node[initial,state] (S)      {$S$};
+  \node[state]         (A) [right of=S]  {$A$};
+  \node[state]         (B) [below of=S] {$B$};
+  \node[state,accepting](f) [below of=A] {$f$};
+
+  \path[->]  (S)  edge node {$x$} (A);
+  \path[->]  (S)  edge node {$y$} (B);
+  \path[->]  (S)  edge node {$\varepsilon$} (f);
+  \path[->]  (A)  edge[loop right] node {$y$} (A);
+  \path[->]  (B)  edge[loop left] node {$x$} (B);
+  \path[->]  (A)  edge node {$y$} (f);
+  \path[->]  (B)  edge node {$x$} (f);
+\end{tikzpicture}
+\end{center}
+
+\paragraph{正规式} 正规式可以直接与线性文法转换，于是就不借助有限自动机了（虽然这个题使用自动机转换也很简单）。
+
+首先改写：
+
+\begin{enumerate}
+    \item $S \rightarrow xA\;|\;yB\;|\;\varepsilon\;$ 不包含本身，直接写为：$S \rightarrow (xA|yB|\varepsilon)$；
+    \item $A \rightarrow yA\;|\;y\;$ 改写为 $A \rightarrow (yA|y)$，也就是 $A\rightarrow y^*y$，$B$ 完全同理，改写为 $B\rightarrow x^*x$；
+    \item 将第二步的结果代入第一步，得到 $S \rightarrow (xy^*y|yx^*x|\varepsilon)$。
+\end{enumerate}
+
+最终得到正规式为 $(xy^*y|yx^*x|\varepsilon)$，如果允许使用 $+$ 与 $?$，可以简写为 $(xy^+|yx^+)?$。
+
+\subsection{作业4.2}
+\subsubsection{题目描述}
+给定右线性文法$G[S]$, 求其等价的左线性文法：
+\begin{align*}
+    S&\rightarrow 0S\;|\;1S\;|\;1A\;|\;0B\\
+    A&\rightarrow 1C\;|\;1\\
+    B&\rightarrow 0C\;|\;0\\
+    C&\rightarrow 0C\;|\;1C\;|\;0\;|\;1
+\end{align*}
+\subsubsection{解答}
+
+字符数较少，似乎用正则比较方便？，下面通过右线性文法转正规式，再将正规式转左线性文法来实现转换：
+
+\paragraph{转正规式} 与上题类似，首先改写：（下方便起见，记$\Sigma=\{0,1\}$）
+
+\begin{itemize}
+    \item $S\rightarrow 0S\;|\;1S\;|\;1A\;|\;0B$ 首先写为 $S\rightarrow (\Sigma S|1A|0B)$，也就是 $S\rightarrow \Sigma^*(1A|0B)$；
+    \item $A\rightarrow 1C\;|\;1$ 简写为 $A\rightarrow 1C?$，$B$ 同理简写为 $0C?$；
+    \item $C\rightarrow 0C\;|\;1C\;|\;0\;|\;1$ 首先写为 $C\rightarrow (\Sigma C|\Sigma)$，也就是 $\Sigma^+$；
+    \item 依次代入上面式子，得到 $S\rightarrow \Sigma^*(11|00)\Sigma^+?$
+\end{itemize}
+
+得到正规式为 $(0|1)^*(11|00)(((1|0)(1|0)^*)|\varepsilon)$。
+
+\paragraph{左线性文法} 类似上文，进行逐步拆解：
+
+\begin{enumerate}
+    \item ${\color{Red} \Sigma^*} ({\color{Purple} 11} |{\color{Orange} 00} ){\color{Green} \Sigma^+ ?} $ 替换为 $S\rightarrow S_1 {\color{Green} \Sigma^+ ?}$、$S_1\rightarrow S_2{\color{Purple} 1}|S_3{\color{Orange} 0}$、$S_2\rightarrow S_4{\color{Purple} 1}$、$S_3\rightarrow S_4{\color{Orange} 0}$、$S_4\rightarrow {\color{Red} \Sigma^*}$；
+    \item $S\rightarrow S_1 \Sigma^+?$ 可写为 $S\rightarrow S_1 0\;|\;S_11\;|\;S0\;|\;S1$；
+    \item $S_4\rightarrow \Sigma^*$ 可写为 $S_4\rightarrow S_40\;|\;S_41\;|\;0\;|\;1\;|\;\varepsilon$；
+\end{enumerate}
+
+总伤，该正规式 ${\color{Red} \Sigma^*} ({\color{Purple} 11} |{\color{Orange} 00} ){\color{Green} \Sigma^+ ?} $，也就是给出的右线性文法对应的左线性文法为：
+
+\begin{align*}
+    S&\rightarrow {\color{Purple} S_21} \;|\;{\color{Orange} S_30} \;|\;{\color{Green} S_1 0\;|\;S_11\;|\;S0\;|\;S1} \\
+    S_1&\rightarrow {\color{Purple} S_21} \;|\;{\color{Orange} S_30} \\
+    S_2&\rightarrow {\color{Purple} S_41} \\
+    S_3&\rightarrow {\color{Orange} S_40} \\
+    S_4&\rightarrow {\color{Red} S_40\;|\;S_41\;|\;0\;|\;1\;|\;\varepsilon} 
+\end{align*}

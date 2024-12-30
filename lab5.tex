@@ -1,0 +1,136 @@
+	% 代码分析：模块功能、涉及到的类、类关系、数据结构及关键代码等；
+	% 任务要求，设计任务要求；
+	% 设计：详细的设计方案，相关的数据结构、算法描述，可采用伪代码等形式化描述
+	% 实现：修改哪些类、如何修改、为什么修改等；
+	% 测试：测试用例，测试结果及结果分析，测试运行界面等；
+	% 调试：调试方法，遇到的问题及解决方案等；
+	% 结论与展望：完成的主要工作、收获、进一步的工作，建议、体会、心得等；
+
+\section{作业5}
+\subsection{作业5.1}
+\subsubsection{题目描述}
+C风格声明语句文法为 \(G\left\lbrack L\right\rbrack = \left( {\{ L,D,T\} ,\{ ;,,,\text{id,int,double}\} ,P,L}\right)\) ，产生式如下:
+
+\(L \rightarrow L;D\) $\quad$ \(L \rightarrow D\) $\quad$ \(D \rightarrow T \;id\) $\quad$ \(D \rightarrow D,{id}\quad T \rightarrow\) int $\quad$ \(T \rightarrow\) double
+
+\begin{enumerate}
+    \item 消除文法产生式的左递归;
+    \item 构造所有非终结符号的首符集 First;
+    \item 构造所有非终结符号的后继符集 Follow;
+    \item 构造 $LL(1)$ 分析表;
+    \item 给出句子int \(i\) ; double \(x,y\) 的分析过程。
+\end{enumerate}
+
+\subsubsection{解答}
+
+\paragraph{消除文法产生式的左递归} 转为右递归文法：
+
+\(L \rightarrow L;D\) $\quad$ \(L \rightarrow D\) 替换为:
+
+\begin{itemize}
+    \item $L \rightarrow  D{L}^{\prime }$
+    \item ${L}^{\prime } \rightarrow  ;D{L}^{\prime } \mid  \varepsilon$
+\end{itemize}
+
+\(D \rightarrow T \;id\) $\quad$ \(D \rightarrow D,{id}\) 替换为：
+
+\begin{itemize}
+    \item $D \rightarrow T\;id\;{D}^{\prime }$
+    \item ${D}^{\prime } \rightarrow ,id$ ${D}^{\prime } \mid  \varepsilon$
+\end{itemize}
+
+\paragraph{First} 可以直接写出：
+
+\begin{lstlisting}[language=c++,title={First},mathescape]
+First($T$)={int, double}
+First(${D}$)={, , $\varepsilon$}
+First(${D}^{\prime }$)={int, double}
+First(${L}^{\prime }$)={; , $\varepsilon$}
+First($L$)={int, double}
+\end{lstlisting}
+
+\paragraph{Follow} 由于不存在隐式左递归，可以整理为：
+
+\begin{itemize}
+    \item $L \rightarrow  D{L}^{\prime }$
+    \item ${L}^{\prime } \rightarrow  ;D{L}^{\prime } \mid  \varepsilon$
+    \item $D \rightarrow  T\;{id\; D}^{\prime }$
+    \item ${D}^{\prime } \rightarrow,id\;{D}^{\prime }$ | ${\varepsilon }$
+    \item $T \rightarrow$ int | double
+\end{itemize}
+
+\begin{lstlisting}[language=c++,title={Follow},mathescape]
+First($T$)={id, #}
+First(${D}$)={; , #}
+First(${D}^{\prime }$)={; , #}
+First(${L}^{\prime }$)={#}
+First($L$)={#}
+\end{lstlisting}
+
+\paragraph{LL(1) 分析表} 不难画出：
+
+
+
+\begin{table}[htbp]
+\centering
+\renewcommand{\arraystretch}{1.2} % 增加行间距
+\setlength{\tabcolsep}{10pt}      % 设置列间距
+\caption{LL(1) 分析表}
+\label{tab:LL1}
+\begin{tabularx}{\textwidth}{>{\centering\arraybackslash}Xcccccc}
+\toprule
+ & , & ; & $id$ & int & double & $\#$ \\
+\midrule
+$L$ &  &  &  & $\#L \rightarrow DL^{\prime}$ & $\#L \rightarrow DL^{\prime}$ & \\
+\rowcolor[gray]{.9} % 使用灰色背景以区分不同行
+$L^{\prime}$ &  & $\#L^{\prime} \rightarrow ;DL^{\prime}$ &  &  &  & $\#L^{\prime} \rightarrow \varepsilon$\\
+$D$ &  &  &  & $D \rightarrow T\;id\;D^\prime$ & $D \rightarrow T\;id\;D^\prime$ & \\
+\rowcolor[gray]{.9}
+$D^{\prime}$ & $D^{\prime} \rightarrow,id\;D^{\prime}$ & $D^{\prime} \rightarrow \varepsilon$ &  &  &  & $D^{\prime} \rightarrow \varepsilon$\\
+$T$ &  &  &  & $T \rightarrow$ int & $T \rightarrow$ double & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{int i; double x,y 分析过程：} 可以写出：
+
+
+\begin{center}
+\begin{tabular}{rl@{\hspace{10em}}r}
+1 & $\#E$ & int $i$; double $x,y\#$ \\
+\hline
+2 & $\#L^\prime D^\prime$ & int $i$; double $x,y\#$ \\
+\hline
+3 & $\#L^\prime D^\prime\;id\;T$ & int $i$; double $x,y\#$ \\
+\hline
+4 & $\#L^\prime D^\prime\;id\;$ int & int $i$; double $x,y\#$ \\
+\hline
+5 & $\#L^\prime D^\prime\;id\;$ & $i$; double $x,y\#$ \\
+\hline
+6 & $\#L^\prime D^\prime$ & ; double $x,y\#$ \\
+\hline
+7 & $\#L^\prime$ & ; double $x,y\#$ \\
+\hline
+8 & $\#L^\prime D;$ & ; double $x,y\#$ \\
+\hline
+9 & $\#L^\prime D$ & double $x,y\#$ \\
+\hline
+10 & $\#L^\prime D^\prime\;id\;T$ & double $x,y\#$ \\
+\hline
+11 & $\#L^\prime D^\prime\;id$ double & double $x,y\#$ \\
+\hline
+12 & $\#L^\prime D^\prime\;id$ & $x,y\#$ \\
+\hline
+13 & $\#L^\prime D^\prime$ & $,y\#$ \\
+\hline
+14 & $\#L^\prime D^\prime\;id,$ & $,y\#$ \\
+\hline
+15 & $\#L^\prime D^\prime\;id$ & $y\#$ \\
+\hline
+16 & $\#L^\prime D^\prime$ & $\#$\\
+\hline
+17 & $\#L^\prime$ & $\#$\\
+\hline
+18 & $\#$ & $\#$\\
+\end{tabular}
+\end{center}

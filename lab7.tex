@@ -1,0 +1,142 @@
+	% 代码分析：模块功能、涉及到的类、类关系、数据结构及关键代码等；
+	% 任务要求，设计任务要求；
+	% 设计：详细的设计方案，相关的数据结构、算法描述，可采用伪代码等形式化描述
+	% 实现：修改哪些类、如何修改、为什么修改等；
+	% 测试：测试用例，测试结果及结果分析，测试运行界面等；
+	% 调试：调试方法，遇到的问题及解决方案等；
+	% 结论与展望：完成的主要工作、收获、进一步的工作，建议、体会、心得等；
+
+\section{作业7}
+\subsection{作业7.1}
+\subsubsection{题目描述}
+
+本章中，关系式 $ {i}^{\left( 1\right) } < {i}^{\left( 2\right) } $ 被翻译成相继的两个四元式：
+
+\begin{lstlisting}[language=c,title={${i}^{\left( 1\right) } < {i}^{\left( 2\right) }$},mathescape=true]
+$\left( {j < ,{i}^{\left( 1\right) },{i}^{\left( 2\right) }, - }\right)$ // 真出口
+$\left(j,-,-, -\right)$ // 假出口
+\end{lstlisting}
+
+
+这种翻译常常浪费一个四元式。如果我们翻译成如下四元式：
+
+$ \left( {j \geq  ,{i}^{\left( 1\right) },{i}^{\left( 2\right) }, - }\right) $ // 假出口跳转,真出口自动滑到下一个四元式
+
+那么,在 $ {i}^{\left( 1\right) } < {i}^{\left( 2\right) } $ 的情况下就不发生跳转（自动滑下来）。但若这个关系后有一个或运算，则另一个无条件转移指令是不可省的，例如：
+
+\begin{lstlisting}[language=c,title={if $A < B \vee  C < D$ then $x = y$},mathescape=true]
+100: $ \left( {j \geq  ,A,B,{102}}\right) $
+101: $ \left( {j,-,-,{103}}\right) \; $ // 或运算前的无条件跳转不能省略
+102: $\left( {j \geq  ,C,D,{104}}\right) $
+103: $ \left( { = ,y,-,x}\right) $
+\end{lstlisting}
+
+请按上述要求改写翻译布尔表达式的语义动作。
+\subsubsection{解答}
+\begin{center}
+\begin{longtable}{r|lll}
+\toprule
+E $\rightarrow$ A $\vee$ M E${}_1$    &  \{ & backpatch(A.falselist, M.quad); & \\
+& &    E.truelist = merge(A.truelist, E${}_1$.truelist); & \\
+& &    E.falselist = E${}_1$.falselist; & \} \\
+\hline
+E $\rightarrow$ E${}_1$ $\wedge$ M E${}_2$  &    \{ & backpatch(E.truelist, M.quad); & \\
+& &    A.falselist = merge(E${}_1$.falselist, E${}_2$.falselist); & \\
+& &    E.truelist = E${}_2$.truelist; & \} \\
+\hline
+M $\rightarrow \varepsilon$       &    \{ & M.quad = nextquad; & \} \\
+\hline
+E $\rightarrow$ 7 E      &     \{ & E.truelist = E${}_1$.falselist & \\
+& &    E.falselist = E${}_1$.falselist & \} \\
+\hline
+E $\rightarrow$ (E${}_1$)      &     \{ & E.truelist = E${}_1$.truelist & \\
+& &    E.falselist = E${}_1$.falselist & \} \\
+\hline
+A $\rightarrow$ A${}_1$ $\vee$ M A${}_2$    &  \{ & backpatch(A.falselist, M.quad); & \\
+& &    A.truelist = merge(A${}_1$.truelist, A${}_2$.truelist); & \\
+& &    A${}_1$.falselist = A${}_2$.falselist; & \} \\
+\hline
+A $\rightarrow$ E $\wedge$ M A${}_1$  &    \{ & backpatch(E.truelist, M.quad); & \\
+& &    A.falselist = merge(E.falselist, A${}_1$.falselist); & \} \\
+\hline
+A $\rightarrow$ 7 A${}_1$      &     \{ & A.truelist = A${}_1$.truelist; & \\
+& &    A.falselist = A${}_1$.falselist; & \} \\
+\hline
+A $\rightarrow$ (A)      &     \{ & A.truelist = A${}_1$.truelist; & \\
+& &    A.falselist = A${}_1$.falselist; & \} \\
+\hline
+E $\rightarrow$ id${}_1$ $\theta$ id${}_2$  & \{ & E.truelist = makelist(); & \\
+& &    E.falselist = makelist(nextquad); & \\
+& &    gen(~j$\theta$, id${}_1$.name, id${}_2$.name, 0); & \} \\
+\hline
+A $\rightarrow$ id${}_1$ $\theta$ id${}_2$ &  \{ & A.truelist = makelist(nextquad + 1); & \\
+& &    A.falselist = makelist(nextquad); & \\
+& &    gen(~j$\theta$, id${}_1$.name, id${}_2$.name, 0); & \\
+& &    gen(j, -, -, 0); & \} \\
+\bottomrule
+\end{longtable}
+\end{center}
+\subsection{作业7.2}
+\subsubsection{题目描述}
+根据本章所述翻译模式，将如下声明语句填符号表（名字、类型、偏移量三项），其他语句翻译为四元式。
+\begin{lstlisting}[language=c,title={四元式翻译}]
+int i, j;
+real x, y;
+i = 1;
+j = 1;
+while (i <= 9)
+{
+	while (j <= 9)
+	{
+		a[i, j] = i * j;
+		j = j + 1;
+	}
+	i = i + 1;
+}
+\end{lstlisting}
+
+\subsubsection{解答}
+
+可以写出符号表：
+
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{rll}
+    \hline
+i  &  int   &  0 \\
+j  &  int   &  4 \\
+x  &  real  &  8 \\
+y  &  real  &  12 \\
+a  &  array &  16 \\
+\hline
+    \end{tabular}
+    \caption{符号表}
+    \label{tab:symbol}
+\end{table}
+
+不难翻译出：
+
+\begin{lstlisting}[language=c,title={四元式翻译}]
+100: (=,1,-,T0_i)
+101: (=,T0_i,-,TB0)
+102: (=,1,-,T1_i)
+103: (=,T1_i,-,TB1)
+104: (=,9,-,T2_i)
+105: (j<=,TB0,T2_i,107)
+106: (j,-,-,120)
+107: (=,9,-,T3_i)
+108: (j<=,TB1,T3_i,110)
+109: (j,-,-,116)
+110: (*,TB0,TB1,T4_i)
+111: (=,T4_i,-,TB2)
+112: (=,1,-,T5_i)
+113: (+,TB1,T5_i,T6_i)
+114: (=,T6_i,-,TB1)
+115: (j,-,-,107)
+116: (=,1,-,T7_i)
+117: (+,TB0,T7_i,T8_i)
+118: (=,T8_i,-,TB0)
+119: (j,-,-,104)
+120: (End,-,-,-)
+\end{lstlisting}

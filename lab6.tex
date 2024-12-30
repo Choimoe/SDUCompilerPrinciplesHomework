@@ -1,0 +1,428 @@
+	% 代码分析：模块功能、涉及到的类、类关系、数据结构及关键代码等；
+	% 任务要求，设计任务要求；
+	% 设计：详细的设计方案，相关的数据结构、算法描述，可采用伪代码等形式化描述
+	% 实现：修改哪些类、如何修改、为什么修改等；
+	% 测试：测试用例，测试结果及结果分析，测试运行界面等；
+	% 调试：调试方法，遇到的问题及解决方案等；
+	% 结论与展望：完成的主要工作、收获、进一步的工作，建议、体会、心得等；
+
+\section{作业6}
+
+文法 $G[E]:\;E \rightarrow E \operatorname{o} E \;|\; E E \;|\; E * \;|\; (E) \;|\; i$ 是生成正规式的二义文法，为了避免与文法元语言符号 “|” 冲突，或运算用符号 $\operatorname{o}$ 表示；连接运算则省略； $∗$ 为闭包运算；$i$ 表示单词，既任何表示单词的终结符号均可与之匹配：
+\begin{enumerate}
+    \item 构造 LR(1) 项目集规范族；
+    \item 构造 LR(1) 分析表，如有冲突，请根据正规式的运算规则消除之；
+    \item 用 LR(1) 分析表分析有两个连续 $a$ 或两个连续 $b$ 的句子：$(a\operatorname{o}b)*(aa\operatorname{o}bb)(a\operatorname{o}b)*$。
+\end{enumerate}
+
+\subsection{作业6.1}
+
+首先拓广文法，加入 $S\rightarrow E$，不难写出 First 与 Follow：
+
+\begin{itemize}
+    \item E：First=\{(, $i$\}、Follow=\{ \#, o, (, $i$, * \}
+    \item S：First=\{(, $i$\}、Follow=\{ \# \}
+\end{itemize}
+
+首先尝试直接转换：
+
+\begin{center}
+    \centering
+    \begin{longtable}{r|ccc}
+
+\toprule
+State &       Items        &         Lookaheads          &  Transitions  \\
+\hline
+0     &  S $\rightarrow$ . E          & \{ \# \}                       &   E   $\rightarrow$  1   \\
+      &  E $\rightarrow$ . E o E    & \{ \#, o, (, $i$, * \}   &  (  $\rightarrow$  2   \\
+      &  E $\rightarrow$ . E E        & \{ \#, o, (, $$i$$, * \}   &  $i$  $\rightarrow$  3   \\
+      &  E $\rightarrow$ . E *      & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . ( E )  & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . $i$        & \{ \#, o, (, $i$, * \}   &               \\
+\hline
+1     &  S $\rightarrow$ E .          & \{ \# \}                       &  (  $\rightarrow$  2   \\
+      &  E $\rightarrow$ E . o E    & \{ \#, o, (, $i$, * \}   &  $i$  $\rightarrow$  3   \\
+      &  E $\rightarrow$ E . E        & \{ \#, o, (, $i$, * \}   &   E   $\rightarrow$  14  \\
+      &  E $\rightarrow$ E . *      & \{ \#, o, (, $i$, * \}   &  *  $\rightarrow$  15  \\
+      &  E $\rightarrow$ . E o E    & \{ \#, o, (, $i$, * \}   &  o  $\rightarrow$  16  \\
+      &  E $\rightarrow$ . E E        & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . E *      & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . ( E )  & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . $i$        & \{ \#, o, (, $i$, * \}   &               \\
+\hline
+2     &  E $\rightarrow$ ( . E )  & \{ \#, o, (, $i$, * \}   &   E   $\rightarrow$  4   \\
+      &  E $\rightarrow$ . E o E    & \{ ), o, (, $i$, * \} &  (  $\rightarrow$  5   \\
+      &  E $\rightarrow$ . E E        & \{ ), o, (, $i$, * \} &  $i$  $\rightarrow$  6   \\
+      &  E $\rightarrow$ . E *      & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . ( E )  & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . $i$        & \{ ), o, (, $i$, * \} &               \\
+\hline
+3     &  E $\rightarrow$ $i$ .        & \{ \#, o, (, $i$, * \}   &               \\
+\hline
+4     &  E $\rightarrow$ ( E . )  & \{ \#, o, (, $i$, * \}   &  (  $\rightarrow$  5   \\
+      &  E $\rightarrow$ E . o E    & \{ ), o, (, $i$, * \} &  $i$  $\rightarrow$  6   \\
+      &  E $\rightarrow$ E . E        & \{ ), o, (, $i$, * \} &   E   $\rightarrow$  9   \\
+      &  E $\rightarrow$ E . *      & \{ ), o, (, $i$, * \} &  *  $\rightarrow$  10  \\
+      &  E $\rightarrow$ . E o E    & \{ ), o, (, $i$, * \} &  o  $\rightarrow$  11  \\
+      &  E $\rightarrow$ . E E        & \{ ), o, (, $i$, * \} &  )  $\rightarrow$  13  \\
+      &  E $\rightarrow$ . E *      & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . ( E )  & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . $i$        & \{ ), o, (, $i$, * \} &               \\
+\hline
+5     &  E $\rightarrow$ ( . E )  & \{ ), o, (, $i$, * \} &  (  $\rightarrow$  5   \\
+      &  E $\rightarrow$ . E o E    & \{ ), o, (, $i$, * \} &  $i$  $\rightarrow$  6   \\
+      &  E $\rightarrow$ . E E        & \{ ), o, (, $i$, * \} &   E   $\rightarrow$  7   \\
+      &  E $\rightarrow$ . E *      & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . ( E )  & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . $i$        & \{ ), o, (, $i$, * \} &               \\
+\hline
+6     &  E $\rightarrow$ $i$ .        & \{ ), o, (, $i$, * \} &               \\
+\hline
+7     &  E $\rightarrow$ ( E . )  & \{ ), o, (, $i$, * \} &  (  $\rightarrow$  5   \\
+      &  E $\rightarrow$ E . o E    & \{ ), o, (, $i$, * \} &  $i$  $\rightarrow$  6   \\
+      &  E $\rightarrow$ E . E        & \{ ), o, (, $i$, * \} &  )  $\rightarrow$  8   \\
+      &  E $\rightarrow$ E . *      & \{ ), o, (, $i$, * \} &   E   $\rightarrow$  9   \\
+      &  E $\rightarrow$ . E o E    & \{ ), o, (, $i$, * \} &  *  $\rightarrow$  10  \\
+      &  E $\rightarrow$ . E E        & \{ ), o, (, $i$, * \} &  o  $\rightarrow$  11  \\
+      &  E $\rightarrow$ . E *      & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . ( E )  & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . $i$        & \{ ), o, (, $i$, * \} &               \\
+\hline
+8     &  E $\rightarrow$ ( E ) .  & \{ ), o, (, $i$, * \} &               \\
+\hline
+9     &  E $\rightarrow$ E E .        & \{ ), o, (, $i$, * \} &  (  $\rightarrow$  5   \\
+      &  E $\rightarrow$ E . o E    & \{ ), o, (, $i$, * \} &  $i$  $\rightarrow$  6   \\
+      &  E $\rightarrow$ E . E        & \{ ), o, (, $i$, * \} &   E   $\rightarrow$  9   \\
+      &  E $\rightarrow$ E . *      & \{ ), o, (, $i$, * \} &  *  $\rightarrow$  10  \\
+      &  E $\rightarrow$ . E o E    & \{ ), o, (, $i$, * \} &  o  $\rightarrow$  11  \\
+      &  E $\rightarrow$ . E E        & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . E *      & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . ( E )  & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . $i$        & \{ ), o, (, $i$, * \} &               \\
+\hline
+10    &  E $\rightarrow$ E * .      & \{ ), o, (, $i$, * \} &               \\
+\hline
+11    &  E $\rightarrow$ E o . E    & \{ ), o, (, $i$, * \} &  (  $\rightarrow$  5   \\
+      &  E $\rightarrow$ . E o E    & \{ ), o, (, $i$, * \} &  $i$  $\rightarrow$  6   \\
+      &  E $\rightarrow$ . E E        & \{ ), o, (, $i$, * \} &   E   $\rightarrow$  12  \\
+      &  E $\rightarrow$ . E *      & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . ( E )  & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . $i$        & \{ ), o, (, $i$, * \} &               \\
+\hline
+12    &  E $\rightarrow$ E o E .    & \{ ), o, (, $i$, * \} &  (  $\rightarrow$  5   \\
+      &  E $\rightarrow$ E . o E    & \{ ), o, (, $i$, * \} &  $i$  $\rightarrow$  6   \\
+      &  E $\rightarrow$ E . E        & \{ ), o, (, $i$, * \} &   E   $\rightarrow$  9   \\
+      &  E $\rightarrow$ E . *      & \{ ), o, (, $i$, * \} &  *  $\rightarrow$  10  \\
+      &  E $\rightarrow$ . E o E    & \{ ), o, (, $i$, * \} &  o  $\rightarrow$  11  \\
+      &  E $\rightarrow$ . E E        & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . E *      & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . ( E )  & \{ ), o, (, $i$, * \} &               \\
+      &  E $\rightarrow$ . $i$        & \{ ), o, (, $i$, * \} &               \\
+\hline
+13    &  E $\rightarrow$ ( E ) .  & \{ \#, o, (, $i$, * \}   &               \\
+\hline
+14    &  E $\rightarrow$ E E .        & \{ \#, o, (, $i$, * \}   &  (  $\rightarrow$  2   \\
+      &  E $\rightarrow$ E . o E    & \{ \#, o, (, $i$, * \}   &  $i$  $\rightarrow$  3   \\
+      &  E $\rightarrow$ E . E        & \{ \#, o, (, $i$, * \}   &   E   $\rightarrow$  14  \\
+      &  E $\rightarrow$ E . *      & \{ \#, o, (, $i$, * \}   &  *  $\rightarrow$  15  \\
+      &  E $\rightarrow$ . E o E    & \{ \#, o, (, $i$, * \}   &  o  $\rightarrow$  16  \\
+      &  E $\rightarrow$ . E E        & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . E *      & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . ( E )  & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . $i$        & \{ \#, o, (, $i$, * \}   &               \\
+\hline
+15    &  E $\rightarrow$ E * .      & \{ \#, o, (, $i$, * \}   &               \\
+\hline
+16    &  E $\rightarrow$ E o . E    & \{ \#, o, (, $i$, * \}   &  (  $\rightarrow$  2   \\
+      &  E $\rightarrow$ . E o E    & \{ \#, o, (, $i$, * \}   &  $i$  $\rightarrow$  3   \\
+      &  E $\rightarrow$ . E E        & \{ \#, o, (, $i$, * \}   &   E   $\rightarrow$  17  \\
+      &  E $\rightarrow$ . E *      & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . ( E )  & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . $i$        & \{ \#, o, (, $i$, * \}   &               \\
+\hline
+17    &  E $\rightarrow$ E o E .    & \{ \#, o, (, $i$, * \}   &  (  $\rightarrow$  2   \\
+      &  E $\rightarrow$ E . o E    & \{ \#, o, (, $i$, * \}   &  $i$  $\rightarrow$  3   \\
+      &  E $\rightarrow$ E . E        & \{ \#, o, (, $i$, * \}   &   E   $\rightarrow$  14  \\
+      &  E $\rightarrow$ E . *      & \{ \#, o, (, $i$, * \}   &  *  $\rightarrow$  15  \\
+      &  E $\rightarrow$ . E o E    & \{ \#, o, (, $i$, * \}   &  o  $\rightarrow$  16  \\
+      &  E $\rightarrow$ . E E        & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . E *      & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . ( E )  & \{ \#, o, (, $i$, * \}   &               \\
+      &  E $\rightarrow$ . $i$        & \{ \#, o, (, $i$, * \}   &               \\
+      \bottomrule
+    \end{longtable}
+\end{center}
+
+直接这样转换会在状态 9 处会因为 o 的冲突无法进行，需要计算闭包：（由于横向空间紧张导致排版困难，Transitions放在每个Lookaheads后的括号内）
+
+\begin{center}
+    \centering
+    \begin{longtable}{c|ll|ll}
+\toprule
+State & CORE Items   & CORE Lookaheads & CLOSURE Items & CLOSURE Lookaheads\\
+\hline
+1 &   S ->  . E    & \{\#\} (2)         & E ->  . E o E & \{ $i$ , ( , o , * , \# \} (2)\\
+ &              &                & E ->  . EE  & \{ $i$ , ( , o , * , \# \} (2)\\
+ &              &                & E ->  . E*  & \{ $i$ , ( , o , * , \# \} (2)\\
+ &              &                & E ->  . (E) & \{ $i$ , ( , o , * , \# \} (3)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , * , \# \} (4)\\
+\hline
+2 &   S -> E .    & \{\#         \} (-) & E ->  . E o E & \{ $i$ , ( , o , * \} (6)\\
+ &   E -> E . o E & \{ $i$ , ( , o , * , \# \} (5) & E ->  . EE  & \{ $i$ , ( , o , * \} (6)\\
+ &   E -> E . E  & \{ $i$ , ( , o , * , \# \} (6) & E ->  . E *  & \{ $i$ , ( , o , * \} (6)\\
+ &   E -> E . *  & \{ $i$ , ( , o , * , \# \} (7) & E ->  . (E) & \{ $i$ , ( , o , * \} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , * \} (9)\\
+\hline
+3 &   E -> ( . E) & \{ $i$ , ( , o , * , \# \} (10) & E ->  . E o E & \{ $i$ , ( , ) , o , * \} (10)\\
+ &              &                & E ->  . EE  & \{ $i$ , ( , ) , o , * \} (10)\\
+ &              &                & E ->  . E*  & \{ $i$ , ( , ) , o , * \} (10)\\
+ &              &                & E ->  . (E) & \{ $i$ , ( , ) , o , * \} (11)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , ) , o , * \} (12)\\
+\hline
+4 &   E -> $i$ .    & \{ $i$ , ( , o , * , \# \} (-)\\
+\hline
+5 &   E -> E o . E & \{ $i$ , ( , o , * , \# \} (13) & E ->  . E o E & \{ $i$ , ( , o , *\} (13)\\
+ &              &                & E ->  . EE  & \{ $i$ , ( , o , *\} (13)\\
+ &              &                & E ->  . E*  & \{ $i$ , ( , o , *\} (13)\\
+ &              &                & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+\hline
+6 &   E -> EE .   & \{ $i$ , ( , o , * , \# \} (-) & E ->  . E o E & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . o E & \{ $i$ , ( , o , *   \} (14) & E ->  . EE  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . E  & \{ $i$ , ( , o , *   \} (15) & E ->  . E*  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . *  & \{ $i$ , ( , o , *   \} (16) & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+\hline
+7 &   E -> E* .   & \{ $i$ , ( , o , * , \# \} (-)\\
+\hline
+8 &   E -> ( . E) & \{ $i$ , ( , o , *   \} (17) & E ->  . E o E & \{ $i$ , ( , o , *\} (17)\\
+ &              &                & E ->  . EE  & \{ $i$ , ( , o , *\} (17)\\
+ &              &                & E ->  . E*  & \{ $i$ , ( , o , *\} (17)\\
+ &              &                & E ->  . (E) & \{ $i$ , ( , o , *\} (11)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (12)\\
+ \hline
+9 &   E -> $i$ .    & \{ $i$ , ( , o , *   \} (-)\\
+\hline
+10 &   E -> (E . ) & \{ $i$ , ( , o , * , \# \} (18) & E ->  . E o E & \{ $i$ , ( , o , *\} (20)\\
+ &   E -> E . o E & \{ $i$ , ( , o , *   \} (19) & E ->  . EE  & \{ $i$ , ( , o , *\} (20)\\
+ &   E -> E . E  & \{ $i$ , ( , o , *   \} (20) & E ->  . E*  & \{ $i$ , ( , o , *\} (20)\\
+ &   E -> E . *  & \{ $i$ , ( , o , *   \} (21) & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+\hline
+11 &   E -> ( . E) & \{ $i$ , ( , ) , o , * \} (22) & E ->  . E o E & \{ $i$ , ( , ) , o , *\} (22)\\
+ &              &                & E ->  . EE  & \{ $i$ , ( , ) , o , *\} (22)\\
+ &              &                & E ->  . E*  & \{ $i$ , ( , ) , o , *\} (22)\\
+ &              &                & E ->  . (E) & \{ $i$ , ( , ) , o , *\} (11)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , ) , o , *\} (12)\\
+ \hline
+12 &   E -> $i$ .    & \{ $i$ , ( , ) , o , * \} (-)\\
+\hline
+13 &   E -> E o E .  & \{ $i$ , ( , o , * , \# \} (-) & E ->  . E o E & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . o E & \{ $i$ , ( , o , *   \} (14) & E ->  . EE  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . E  & \{ $i$ , ( , o , *   \} (15) & E ->  . E*  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . *  & \{ $i$ , ( , o , *   \} (16) & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+\hline
+14 &   E -> E o . E & \{ $i$ , ( , o , *   \} (23) & E ->  . E o E & \{ $i$ , ( , o , *\} (23)\\
+ &              &                & E ->  . EE  & \{ $i$ , ( , o , *\} (23)\\
+ &              &                & E ->  . E*  & \{ $i$ , ( , o , *\} (23)\\
+ &              &                & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+\hline
+15 &   E -> EE .   & \{ $i$ , ( , o , * \} (-)   & E ->  . E o E & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . o E & \{ $i$ , ( , o , * \} (14)   & E ->  . EE  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . E  & \{ $i$ , ( , o , * \} (15)   & E ->  . E*  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . *  & \{ $i$ , ( , o , * \} (16)   & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+\hline
+16 &   E -> E* .   & \{ $i$ , ( , o , * \} (-)\\
+\hline
+17 &   E -> (E . ) & \{ $i$ , ( , o , *   \} (24) & E ->  . E o E & \{ $i$ , ( , o , *\} (20)\\
+ &   E -> E . o E & \{ $i$ , ( , ) , o , * \} (19) & E ->  . EE  & \{ $i$ , ( , o , *\} (20)\\
+ &   E -> E . E  & \{ $i$ , ( , ) , o , * \} (20) & E ->  . E*  & \{ $i$ , ( , o , *\} (20)\\
+ &   E -> E . *  & \{ $i$ , ( , ) , o , * \} (21) & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+\hline
+18 &   E -> (E) .  & \{ $i$ , ( , o , * , \# \} (-)\\
+\hline
+19 &   E -> E o . E & \{ $i$ , ( , ) , o , * \} (26) & E ->  . E o E & \{ $i$ , ( , o , *\} (26)\\
+ &              &                & E ->  . EE  & \{ $i$ , ( , o , *\} (26)\\
+ &              &                & E ->  . E*  & \{ $i$ , ( , o , *\} (26)\\
+ &              &                & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+\hline
+20 &   E -> EE .   & \{ $i$ , ( , ) , o , * \} (-) & E ->  . E o E & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . o E & \{ $i$ , ( , o , *   \} (14) & E ->  . EE  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . E  & \{ $i$ , ( , o , *   \} (15) & E ->  . E*  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . *  & \{ $i$ , ( , o , *   \} (16) & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+\hline
+21 &   E -> E* .   & \{ $i$ , ( , ) , o , * \} (-)\\
+\hline
+22 &   E -> (E . ) & \{ $i$ , ( , ) , o , * \} (25) & E ->  . E o E & \{ $i$ , ( , o , *\} (20)\\
+ &   E -> E . o E & \{ $i$ , ( , ) , o , * \} (19) & E ->  . EE  & \{ $i$ , ( , o , *\} (20)\\
+ &   E -> E . E  & \{ $i$ , ( , ) , o , * \} (20) & E ->  . E*  & \{ $i$ , ( , o , *\} (20)\\
+ &   E -> E . *  & \{ $i$ , ( , ) , o , * \} (21) & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+ \hline
+23 &   E -> E o E .  & \{ $i$ , ( , o , *  \} (-)  & E ->  . E o E & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . o E & \{ $i$ , ( , o , *  \} (14)  & E ->  . EE  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . E  & \{ $i$ , ( , o , *  \} (15)  & E ->  . E*  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . *  & \{ $i$ , ( , o , *  \} (16)  & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+\hline
+24 &   E -> (E) .  & \{ $i$ , ( , o , *  \} (-)\\
+\hline
+25 &   E -> (E) .  & \{ $i$ , ( , ) , o , *\} (-)\\
+\hline
+26 &   E -> E o E .  & \{ $i$ , ( , ) , o , *\} (-)  & E ->  . E o E & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . o E & \{ $i$ , ( , o , *  \} (14)  & E ->  . EE  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . E  & \{ $i$ , ( , o , *  \} (15)  & E ->  . E*  & \{ $i$ , ( , o , *\} (15)\\
+ &   E -> E . *  & \{ $i$ , ( , o , *  \} (16)  & E ->  . (E) & \{ $i$ , ( , o , *\} (8)\\
+ &              &                & E ->  . $i$   & \{ $i$ , ( , o , *\} (9)\\
+ \bottomrule
+    \end{longtable}
+\end{center}
+
+\subsection{作业6.2}
+
+修正冲突后的分析表如下：
+
+\begin{center}
+    \begin{longtable}{|c|*{6}{>{\centering\arraybackslash}p{1.6cm}|}*{2}{>{\centering\arraybackslash}p{0.5cm}|}}
+\hline
+\multicolumn{1}{|c|}{} & \multicolumn{6}{c|}{\textbf{Action}} & \multicolumn{2}{c|}{\textbf{Goto}} \\
+\cline{2-9}
+\textbf{状态} & \textbf{i} & \textbf{(} & \textbf{)} & \textbf{o} & \textbf{*} & \textbf{\#} & \textbf{S} & \textbf{E} \\
+\hline
+1      & s4    & s3    &       &       &       &       &       & 2 \\
+\hline
+2      & s9    & s8    &       & s5    & s7    & \textbf{acc}   &       & 6 \\
+\hline
+3      & s12    & s11    &       &       &       &       &       & 10 \\
+\hline
+4      & E$\rightarrow$ $i$  & E$\rightarrow$ $i$  &       & E$\rightarrow$ $i$  & E$\rightarrow$ $i$  & E$\rightarrow$ $i$  &     &   \\
+\hline
+5      & s9    & s8    &       &       &       &       &       & 13 \\
+\hline
+6      & E$\rightarrow$EE & E$\rightarrow$EE &       & E$\rightarrow$EE & s16    & E$\rightarrow$EE &  &      \\
+\hline
+7      & E$\rightarrow$E$*$ & E$\rightarrow$E$*$ &       & E$\rightarrow$E$*$ & E$\rightarrow$E$*$ & E$\rightarrow$E$*$ &      &  \\
+\hline
+8      & s12    & s11    &       &       &       &       &       & 17 \\
+\hline
+9      & E$\rightarrow$ $i$  & E$\rightarrow$ $i$  &       & E$\rightarrow$ $i$  & E$\rightarrow$ $i$  &       &     &   \\
+\hline
+10      & s9    & s8    & s18    & s19    & s21    &       &       & 20 \\
+\hline
+11      & s12    & s11    &       &       &       &       &       & 22 \\
+\hline
+12      & E$\rightarrow$ $i$  & E$\rightarrow$ $i$  & E$\rightarrow$ $i$  & E$\rightarrow$ $i$  & E$\rightarrow$ $i$  &       &  &      \\
+\hline
+13      & s9    & s8    &       & E$\rightarrow$E o E& s16    & E$\rightarrow$E o E&       & 15 \\
+\hline
+14      & s9    & s8    &       &       &       &       &       & 23 \\
+\hline
+15      & E$\rightarrow$EE & E$\rightarrow$EE &       & E$\rightarrow$EE & s16    &       &       & 15 \\
+\hline
+16      & E$\rightarrow$E$*$ & E$\rightarrow$E$*$ &       & E$\rightarrow$E$*$ & E$\rightarrow$E$*$ &       &       & \\
+\hline
+17      & s9    & s8    & s24    & s19    & s21    &       &       & 20 \\
+\hline
+18      & E$\rightarrow$(E)& E$\rightarrow$(E)&       & E$\rightarrow$(E)& E$\rightarrow$(E)& E$\rightarrow$(E)&     &   \\
+\hline
+19      & s9    & s8    &       &       &       &       &       & 26 \\
+\hline
+20      & E$\rightarrow$EE & E$\rightarrow$EE & E$\rightarrow$EE & E$\rightarrow$EE & s16    &       &       & 15 \\
+\hline
+21      & E$\rightarrow$E$*$ & E$\rightarrow$E$*$ & E$\rightarrow$E$*$ & E$\rightarrow$E$*$ & E$\rightarrow$E$*$ &       &      &  \\
+\hline
+22      & s9    & s8    & s25    & s19    & s21    &       &       & 20 \\
+\hline
+23      & s9    & s8    &       & E$\rightarrow$E o E& s16    &       &       & 15 \\
+\hline
+24      & E$\rightarrow$(E)& E$\rightarrow$(E)&       & E$\rightarrow$(E)& E$\rightarrow$(E)&       &        & \\
+\hline
+25      & E$\rightarrow$(E)& E$\rightarrow$(E)& E$\rightarrow$(E)& E$\rightarrow$(E)& E$\rightarrow$(E)&       &        & \\
+\hline
+26      & s9    & s8    & E$\rightarrow$E o E& E$\rightarrow$E o E& s16    &       &       & 15 \\
+\hline
+\end{longtable}
+\end{center}
+
+
+\subsection{作业6.3}
+
+分析 $(a\operatorname{o}b)*(aa\operatorname{o}bb)(a\operatorname{o}b)*$ 的过程为：
+
+\begin{center}
+\begin{longtable}{r|l@{\hspace{10em}}r}
+\toprule
+ & \textbf{符号栈} & \textbf{输入串}\\
+\hline
+1 & \# & ( a o b ) * ( a a o b b ) ( a o b ) * \# \\
+\hline
+2 & \# ( & a o b ) * ( a a o b b ) ( a o b ) * \# \\
+\hline
+3 & \# ( a & o b ) * ( a a o b b ) ( a o b ) * \# \\
+\hline
+4 & \# ( a o & b ) * ( a a o b b ) ( a o b ) * \# \\
+\hline
+5 & \# ( a o b & ) * ( a a o b b ) ( a o b ) * \# \\
+\hline
+6 & \# ( E & ) * ( a a o b b ) ( a o b ) * \# \\
+\hline
+7 & \# ( E ) & * ( a a o b b ) ( a o b ) * \# \\
+\hline
+8 & \# E & * ( a a o b b ) ( a o b ) * \# \\
+\hline
+9 & \# E * & ( a a o b b ) ( a o b ) * \# \\
+\hline
+10 & \# E ( & a a o b b ) ( a o b ) * \# \\
+\hline
+11 & \# E ( a & a o b b ) ( a o b ) * \# \\
+\hline
+12 & \# E ( a a & o b b ) ( a o b ) * \# \\
+\hline
+13 & \# E ( E & o b b ) ( a o b ) * \# \\
+\hline
+14 & \# E ( E o & b b ) ( a o b ) * \# \\
+\hline
+15 & \# E ( E o b & b ) ( a o b ) * \# \\
+\hline
+16 & \# E ( E o b b & ) ( a o b ) * \# \\
+\hline
+17 & \# E ( E o E & ) ( a o b ) * \# \\
+\hline
+18 & \# E ( E & ) ( a o b ) * \# \\
+\hline
+19 & \# E ( E ) & ( a o b ) * \# \\
+\hline
+20 & \# E E & ( a o b ) * \# \\
+\hline
+21 & \# E & \# ( a o b ) * \# \\
+\hline
+22 & \# E ( & a o b ) * \# \\
+\hline
+23 & \# E ( a & o b ) * \# \\
+\hline
+24 & \# E ( a o & b ) * \# \\
+\hline
+25 & \# E ( a o b & ) * \# \\
+\hline
+26 & \# E ( E & ) * \# \\
+\hline
+27 & \# E ( E ) & * \# \\
+\hline
+28 & \# E E & * \# \\
+\hline
+29 & \# E & * \# \\
+\hline
+30 & \# E * & \# \\
+\hline
+31 & \# E & \# \\
+\hline
+32 & \textbf{acc} & \\
+\bottomrule
+\end{longtable}
+\end{center}

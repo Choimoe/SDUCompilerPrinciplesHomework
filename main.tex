@@ -1,0 +1,144 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{xeCJK} 
+\usepackage{authblk} 
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{thmtools}
+\usepackage{ctex}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{framed}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{tabularx} % 用于设置表格宽度
+\usepackage{xcolor}   % 用于表格中使用颜色
+\usepackage{colortbl} % 用于彩色表格
+%for long table
+\usepackage{longtable}
+
+%for table toprule line
+\usepackage{booktabs}
+
+\colorlet{LightGray}{White!90!Periwinkle}
+\colorlet{LightOrange}{Orange!15}
+\colorlet{LightGreen}{Green!15}
+\bibliographystyle{plain}
+\geometry{a4paper}
+\geometry{left=2cm} 
+\geometry{right=2cm} 
+\geometry{top=3cm} 
+\geometry{bottom=3cm} 
+\pagestyle{fancy}
+\fancyhf{}
+\newcommand{\HRule}[1]{\rule{\linewidth}{#1}}
+\usetikzlibrary{trees}
+\definecolor{EE}{RGB}{147, 233, 192}
+\definecolor{TT}{RGB}{112, 182, 151}
+\definecolor{FF}{RGB}{75, 128, 107}
+\definecolor{oo}{RGB}{35, 71, 60}
+\declaretheoremstyle[name=Theorem,]{thmsty}
+\declaretheorem[style=thmsty,numberwithin=section]{theorem}
+\tcolorboxenvironment{theorem}{colback=LightGray}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning,arrows,automata}
+\tikzset{
+    startstop/.style={rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30},
+    process/.style={rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!15},
+    arrow/.style={thick, ->, >=stealth},
+}
+
+\setstretch{1.2}
+\geometry{
+    textheight=9in,
+    textwidth=5.5in,
+    top=1in,
+    headheight=12pt,
+    headsep=25pt,
+    footskip=30pt
+}
+
+\lstset{
+    numbers=left, 
+    numberstyle= \tiny, 
+    keywordstyle= \color{ blue!70},%设置关键字颜色
+    commentstyle= \color{red!50!green!50!blue!50}, %设置注释颜色
+    frame=shadowbox, % 阴影效果
+    rulesepcolor= \color{ red!20!green!20!blue!20} ,
+    escapeinside=``, % 英文分号中可写入中文
+    xleftmargin=2em, %距离左边界2em
+    aboveskip=1em,
+    framexleftmargin=2em,
+    basicstyle=\ttfamily,
+    columns=fullflexible,%可以自动换行
+    linewidth=1\linewidth, %设置代码块与行同宽
+    breaklines=true,%在单词边界处换行。
+    showstringspaces=false， %去掉空格时产生的下划的空格标志, 设置为true则出现
+    breakatwhitespace=ture,%可以在空格处换行
+    escapechar=`%设置转义字符为反引号
+}
+\rhead{Choimoe/SDUCompilerPrinciplesHomework}
+\lhead{编译原理与技术课程作业}
+\rfoot{\thepage}
+\begin{document}
+\title{ \normalsize \textsc{}
+		\\ [2.0cm]
+		\HRule{2.0pt} \\
+		\LARGE \textbf{{编译原理与技术课程作业}
+		\HRule{2.0pt} \\ [0.6cm] {————作业1\;\textasciitilde\;9\;合集} \vspace*{10\baselineskip}}
+		}
+\date{}
+\author{Choimoe \\ 
+		\href{https://github.com/Choimoe/SDUCompilerPrinciplesHomework}{https://github.com/Choimoe/SDUCompilerPrinciplesHomework} \\
+		SDU 编译原理与技术课程作业 \\
+		2024.12.31}
+
+\maketitle
+
+\newpage
+\tableofcontents
+
+\newpage
+\include{lab1}
+
+\newpage
+\include{lab2}
+
+\newpage
+\include{lab3}
+
+\newpage
+\include{lab4}
+
+\newpage
+\include{lab5}
+
+\newpage
+\include{lab6}
+
+\newpage
+\include{lab7}
+
+\newpage
+\include{lab8}
+
+\newpage
+\include{lab9}
+
+\end{document} 
+
+
